@@ -129,7 +129,8 @@ def train_score_model(score_model, dataset, lr, n_epochs, batch_size, ckpt_name,
 
   optimizer = Adam(score_model.parameters(), lr=lr)
   scheduler = LambdaLR(optimizer, lr_lambda=lr_scheduler_fn)
-  tqdm_epoch = trange(n_epochs)
+  # tqdm_epoch = trange(n_epochs)
+  tqdm_epoch = range(n_epochs) # https://github.com/elanlavie/VoyagerTutorialRepository/issues/10
   for epoch in tqdm_epoch:
     score_model.train()
     avg_loss = 0.
@@ -146,7 +147,8 @@ def train_score_model(score_model, dataset, lr, n_epochs, batch_size, ckpt_name,
     lr_current = scheduler.get_last_lr()[0]
     print('{} Average Loss: {:5f} lr {:.1e}'.format(epoch, avg_loss / num_items, lr_current))
     # Print the averaged training loss so far.
-    tqdm_epoch.set_description('Average Loss: {:5f}'.format(avg_loss / num_items))
+    # tqdm_epoch.set_description('Average Loss: {:5f}'.format(avg_loss / num_items))
+    print('Average Loss: {:5f}'.format(avg_loss / num_items))
     # Update the checkpoint after each epoch of training.
     torch.save(score_model.state_dict(), f'ckpt_{ckpt_name}.pth')
     if callback is not None:
@@ -167,7 +169,7 @@ tfm = Compose([
     ToTensor(),
     Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
-dataset_rsz = CelebA("/home/binxuwang/Datasets", target_type=["attr"],
+dataset_rsz = CelebA("/home/azureuser/github/DiffusionFromScratch/Datasets", target_type=["attr"],
                     transform=tfm, download=False) # ,"identity"
 #%%
 # def preprocess_dataset(dataset_rsz, ):
@@ -221,6 +223,7 @@ def save_sample_callback(score_model, epocs, ckpt_name):
 # continue_training = False #@param {type:"boolean"}
 # if not continue_training:
 #   print("initilize new score model...")
+from net_models import UNet_Tranformer_attrb
 score_model = torch.nn.DataParallel(
   UNet_Tranformer_attrb(marginal_prob_std=marginal_prob_std_fn))
 score_model = score_model.to(device)
@@ -267,3 +270,5 @@ plt.imshow(sample_grid.permute(1, 2, 0).cpu(), vmin=0., vmax=1.)
 plt.tight_layout()
 plt.show()
 
+# save the figure
+plt.savefig('samples.png')

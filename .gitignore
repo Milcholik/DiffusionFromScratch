@@ -1,0 +1,4 @@
+.venv
+Datasets
+# ignore files start with samples
+samples*
